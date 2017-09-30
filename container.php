@@ -11,6 +11,7 @@ use Bernard\QueueFactory;
 use Bernard\QueueFactory\PersistentFactory;
 use Building\Domain\Aggregate\Building;
 use Building\Domain\Command;
+use Building\Domain\Constraint\UserIsAllowed;
 use Building\Domain\DomainEvent\CheckInAnomalyDetected;
 use Building\Domain\DomainEvent\UserCheckedIn;
 use Building\Domain\DomainEvent\UserCheckedOut;
@@ -209,7 +210,16 @@ return new ServiceManager([
             return function (Command\CheckInUser $command) use ($buildings) {
                 $buildings
                     ->get($command->buildingId())
-                    ->checkInUser($command->username());
+                    ->checkInUser(
+                        $command->username(),
+                        new class implements UserIsAllowed
+                        {
+                            public function __invoke(string $username) : bool
+                            {
+                                return 'realDonaldTrump' !== $username;
+                            }
+                        }
+                    );
             };
         },
         Command\CheckOutUser::class => function (ContainerInterface $container) : callable {

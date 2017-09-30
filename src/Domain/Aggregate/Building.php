@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Building\Domain\Aggregate;
 
+use Building\Domain\Constraint\UserIsAllowed;
 use Building\Domain\DomainEvent\CheckInAnomalyDetected;
 use Building\Domain\DomainEvent\NewBuildingWasRegistered;
 use Building\Domain\DomainEvent\UserCheckedIn;
@@ -42,8 +43,17 @@ final class Building extends AggregateRoot
         return $self;
     }
 
-    public function checkInUser(string $username)
+    public function checkInUser(string $username, UserIsAllowed $allowed)
     {
+        if (! $allowed($username)) {
+            throw new \OutOfBoundsException(\sprintf(
+                'User "%s" is not allowed to enter "%s" %s',
+                $username,
+                $this->name,
+                $this->uuid->toString()
+            ));
+        }
+
         $anomaly = \array_key_exists($username, $this->checkedInUsers);
 
         $this->recordThat(UserCheckedIn::fromBuildingAndUser($this->uuid, $username));
