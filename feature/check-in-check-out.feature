@@ -15,4 +15,4 @@ Feature: Users check-in and check-out of a building
   Scenario: check-in (with examples)
     Given the "Hilton hotel xyz" has been registered as a building
     When "bob" checks into the building
-    Then the "bob" was checked into the building
+    Then "bob" was checked into the building
